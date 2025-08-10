@@ -41,9 +41,9 @@ REM Create output directory
 if not exist "build" mkdir build
 
 REM Compile
-echo Compiling main.c...
+echo Compiling soundboard project...
 echo Using vcpkg libraries from: %VCPKG_INSTALLED%
-%CC% %CFLAGS% %INCLUDES% -o build\soundboard.exe main.c %LINK_LIBS% -Xlinker /SUBSYSTEM:WINDOWS
+%CC% %CFLAGS% %INCLUDES% -o build\soundboard.exe main.c renderer.c soundboard.c %LINK_LIBS% -Xlinker /SUBSYSTEM:WINDOWS
 
 if %ERRORLEVEL% EQU 0 (
     echo.
