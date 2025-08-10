@@ -9,7 +9,6 @@
 #include <string.h>
 #include <windows.h>
 
-
 #pragma comment(lib, "winmm.lib")
 
 #if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L
@@ -104,7 +103,12 @@ void mouse_button_callback(GLFWwindow *window, int button, int action,
   }
 }
 
-int main(void) {
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+                   LPSTR lpCmdLine, int nCmdShow) {
+  (void)hInstance;     // Suppress unused parameter warning
+  (void)hPrevInstance; // Suppress unused parameter warning
+  (void)lpCmdLine;     // Suppress unused parameter warning
+  (void)nCmdShow;      // Suppress unused parameter warning
   if (!glfwInit()) {
     fprintf(stderr, "Failed to initialize GLFW\n");
     return -1;

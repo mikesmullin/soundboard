@@ -37,18 +37,18 @@ if not exist "build" mkdir build
 REM Compile
 echo Compiling main.c...
 echo Using vcpkg libraries from: %VCPKG_INSTALLED%
-%CC% %CFLAGS% %INCLUDES% -o build\soundboard.exe main.c %LINK_LIBS% -Xlinker /SUBSYSTEM:CONSOLE
+%CC% %CFLAGS% %INCLUDES% -o build\soundboard.exe main.c %LINK_LIBS% -Xlinker /SUBSYSTEM:WINDOWS
 
 if %ERRORLEVEL% EQU 0 (
     echo.
-    echo Build successful! Static executable created at: build\soundboard.exe
+    echo Build successful! Windows executable created at: build\soundboard.exe
     echo.
     echo To run the program:
     echo   cd build
     echo   soundboard.exe
     echo.
     echo Make sure you have .wav files in the same directory as the executable.
-    echo Note: This is a statically linked executable - no DLL files needed!
+    echo Note: This is a statically linked Windows application - no console window will appear!
 ) else (
     echo.
     echo Build failed! Please check the error messages above.
