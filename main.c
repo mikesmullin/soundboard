@@ -10,7 +10,6 @@
 #include <string.h>
 #include <windows.h>
 
-
 #pragma comment(lib, "winmm.lib")
 
 #if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L
@@ -56,8 +55,7 @@ void draw_text_simple(float x, float y, const char *text, float r, float g,
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-  glColor4f(r, g, b, 1.0f);
+  glEnable(GL_TEXTURE_2D);
 
   // Bind the atlas texture
   glBindTexture(GL_TEXTURE_2D, atlas->id);
@@ -82,6 +80,7 @@ void draw_text_simple(float x, float y, const char *text, float r, float g,
     float t1 = glyph->t1;
 
     glBegin(GL_QUADS);
+    glColor4f(r, g, b, 1.0f);
     glTexCoord2f(s0, t0);
     glVertex2f(x0, y0);
     glTexCoord2f(s0, t1);
@@ -117,7 +116,17 @@ void init_font_system() {
   if (!font) {
     fprintf(stderr,
             "Warning: Could not load any system fonts, text may not display\n");
+    return;
   }
+
+  // Pre-load ASCII characters to ensure they're in the atlas
+  const char *cache_text = " !\"#$%&'()*+,-./"
+                           "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
+                           "abcdefghijklmnopqrstuvwxyz{|}~";
+  texture_font_load_glyphs(font, cache_text);
+
+  printf("Font loaded successfully. Atlas size: %dx%d\n", atlas->width,
+         atlas->height);
 }
 
 void cleanup_font_system() {
@@ -243,12 +252,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
-  // Enable textures for font rendering
-  glEnable(GL_TEXTURE_2D);
-
   while (!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f); // Dark background
+
+    // Disable textures for rectangle drawing
+    glDisable(GL_TEXTURE_2D);
 
     for (int i = 0; i < sb.count; i++) {
       int row = i / GRID_COLS;
@@ -286,7 +295,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         display_name[18] = '\0';
       }
 
-      // Draw filename text
+      // Draw filename text (this will re-enable textures internally)
       draw_text_simple(tile_x + 5.0f, tile_y + TILE_HEIGHT - 15.0f,
                        display_name, 1.0f, 1.0f, 1.0f);
     }

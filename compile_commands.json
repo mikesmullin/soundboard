@@ -1,0 +1,7 @@
+[
+  {
+    "directory": "z:\\Making_Games\\Soundboard",
+    "command": "clang -std=c99 -Wall -Wextra -O2 -I\"z:\\Making_Games\\Soundboard\\vcpkg\\installed\\x64-windows-static\\include\" -I\"z:\\Making_Games\\Soundboard\\deps\\dirent\" -o build\\soundboard.exe main.c \"z:\\Making_Games\\Soundboard\\vcpkg\\installed\\x64-windows-static\\lib\\glfw3.lib\" \"z:\\Making_Games\\Soundboard\\vcpkg\\installed\\x64-windows-static\\lib\\glew32.lib\" \"z:\\Making_Games\\Soundboard\\vcpkg\\installed\\x64-windows-static\\lib\\freetype-gl.lib\" \"z:\\Making_Games\\Soundboard\\vcpkg\\installed\\x64-windows-static\\lib\\freetype.lib\" \"z:\\Making_Games\\Soundboard\\vcpkg\\installed\\x64-windows-static\\lib\\libpng16.lib\" \"z:\\Making_Games\\Soundboard\\vcpkg\\installed\\x64-windows-static\\lib\\zlib.lib\" \"z:\\Making_Games\\Soundboard\\vcpkg\\installed\\x64-windows-static\\lib\\brotlidec.lib\" \"z:\\Making_Games\\Soundboard\\vcpkg\\installed\\x64-windows-static\\lib\\brotlicommon.lib\" \"z:\\Making_Games\\Soundboard\\vcpkg\\installed\\x64-windows-static\\lib\\bz2.lib\" \"z:\\Making_Games\\Soundboard\\vcpkg\\installed\\x64-windows-static\\lib\\OpenGL32.lib\" -lwinmm -lgdi32 -luser32 -lkernel32 -lshell32 -Xlinker /SUBSYSTEM:WINDOWS",
+    "file": "main.c"
+  }
+]
