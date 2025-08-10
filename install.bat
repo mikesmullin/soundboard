@@ -1,5 +1,5 @@
 @echo off
-echo Installing vcpkg and dependencies for Soundboard project...
+echo Installing dependencies for Soundboard project...
 
 REM Check if vcpkg directory already exists
 if exist "vcpkg" (
@@ -87,6 +87,6 @@ echo   deps/
 echo   └── dirent/
 echo       └── dirent.h
 echo.
-echo You can now run build_vcpkg.bat to compile your project.
+echo You can now run build.bat to compile your project.
 
 pause

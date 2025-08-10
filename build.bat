@@ -3,19 +3,19 @@ echo Building Soundboard project...
 
 REM Check if vcpkg dependencies exist
 if not exist "vcpkg\installed\x64-windows\lib\glfw3dll.lib" (
-    echo Error: GLFW not found in vcpkg. Please run install_vcpkg_and_deps.bat first.
+    echo Error: GLFW not found in vcpkg. Please run install.bat first.
     pause
     exit /b 1
 )
 
 if not exist "vcpkg\installed\x64-windows\lib\glew32.lib" (
-    echo Error: GLEW not found in vcpkg. Please run install_vcpkg_and_deps.bat first.
+    echo Error: GLEW not found in vcpkg. Please run install.bat first.
     pause
     exit /b 1
 )
 
 if not exist "deps\dirent" (
-    echo Error: dirent.h not found. Please run install_vcpkg_and_deps.bat first.
+    echo Error: dirent.h not found. Please run install.bat first.
     pause
     exit /b 1
 )
