@@ -204,8 +204,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         }
       }
 
-      // Draw filename text
-      draw_text(text_x, tile_y + TILE_HEIGHT - 15.0f, display_name, 1.0f, 1.0f, 1.0f);
+      // Draw filename text (with clipping for marquee effect)
+      if (sb.hovered_tile == i && strlen(sb.sounds[i].name) > 18) {
+        draw_text_clipped(
+            text_x,
+            tile_y + TILE_HEIGHT - 15.0f,
+            display_name,
+            1.0f,
+            1.0f,
+            1.0f,
+            tile_x + 5.0f,
+            tile_y,
+            TILE_WIDTH - 10.0f,
+            TILE_HEIGHT);
+      } else {
+        draw_text(text_x, tile_y + TILE_HEIGHT - 15.0f, display_name, 1.0f, 1.0f, 1.0f);
+      }
     }
 
     glfwSwapBuffers(window);
