@@ -14,6 +14,12 @@ if not exist "vcpkg\installed\x64-windows-static\lib\glew32.lib" (
     exit /b 1
 )
 
+if not exist "vcpkg\installed\x64-windows-static\lib\freetype-gl.lib" (
+    echo Error: FreeType-GL library not found in vcpkg. Please run install.bat first.
+    pause
+    exit /b 1
+)
+
 if not exist "deps\dirent" (
     echo Error: dirent.h not found. Please run install.bat first.
     pause
@@ -29,7 +35,7 @@ set CC=clang
 set CFLAGS=-std=c99 -Wall -Wextra -O2
 set INCLUDES=-I"%VCPKG_INSTALLED%\include" -I"deps\dirent"
 set LIBS=-L"%VCPKG_INSTALLED%\lib"
-set LINK_LIBS="%VCPKG_INSTALLED%\lib\glfw3.lib" "%VCPKG_INSTALLED%\lib\glew32.lib" "%VCPKG_INSTALLED%\lib\OpenGL32.lib" -lwinmm -lgdi32 -luser32 -lkernel32 -lshell32
+set LINK_LIBS="%VCPKG_INSTALLED%\lib\glfw3.lib" "%VCPKG_INSTALLED%\lib\glew32.lib" "%VCPKG_INSTALLED%\lib\freetype-gl.lib" "%VCPKG_INSTALLED%\lib\freetype.lib" "%VCPKG_INSTALLED%\lib\libpng16.lib" "%VCPKG_INSTALLED%\lib\zlib.lib" "%VCPKG_INSTALLED%\lib\brotlidec.lib" "%VCPKG_INSTALLED%\lib\brotlicommon.lib" "%VCPKG_INSTALLED%\lib\bz2.lib" "%VCPKG_INSTALLED%\lib\OpenGL32.lib" -lwinmm -lgdi32 -luser32 -lkernel32 -lshell32
 
 REM Create output directory
 if not exist "build" mkdir build

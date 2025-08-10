@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <dirent.h>
+#include <freetype-gl/freetype-gl.h>
 #include <math.h>
 #include <mmsystem.h>
 #include <stdbool.h>
@@ -8,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <windows.h>
+
 
 #pragma comment(lib, "winmm.lib")
 
@@ -33,6 +35,10 @@ typedef struct {
   float scroll_offset;
 } Soundboard;
 
+// FreeType-GL globals
+texture_atlas_t *atlas = NULL;
+texture_font_t *font = NULL;
+
 void draw_rect(float x, float y, float w, float h, float r, float g, float b) {
   glBegin(GL_QUADS);
   glColor3f(r, g, b);
@@ -45,20 +51,83 @@ void draw_rect(float x, float y, float w, float h, float r, float g, float b) {
 
 void draw_text_simple(float x, float y, const char *text, float r, float g,
                       float b) {
-  // Simple bitmap text rendering using GLFW
-  glColor3f(r, g, b);
-  glRasterPos2f(x, y);
+  if (!font || !atlas)
+    return;
 
-  // For now, we'll draw a simple representation
-  // In a full implementation, you'd use a proper font rendering library
-  // This is a placeholder that draws small rectangles for each character
-  float char_width = 6.0f;
-  float char_height = 8.0f;
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  for (int i = 0; text[i] != '\0' && i < 20; i++) { // Limit to 20 chars
-    if (text[i] != '.' && text[i] != ' ') {
-      draw_rect(x + i * char_width, y, char_width - 1, char_height, r, g, b);
-    }
+  glColor4f(r, g, b, 1.0f);
+
+  // Bind the atlas texture
+  glBindTexture(GL_TEXTURE_2D, atlas->id);
+
+  float pen_x = x;
+  float pen_y = y;
+
+  for (int i = 0; text[i] != '\0'; i++) {
+    char character[2] = {text[i], '\0'};
+    texture_glyph_t *glyph = texture_font_get_glyph(font, character);
+    if (!glyph)
+      continue;
+
+    float x0 = pen_x + glyph->offset_x;
+    float y0 = pen_y + glyph->offset_y;
+    float x1 = x0 + glyph->width;
+    float y1 = y0 - glyph->height;
+
+    float s0 = glyph->s0;
+    float t0 = glyph->t0;
+    float s1 = glyph->s1;
+    float t1 = glyph->t1;
+
+    glBegin(GL_QUADS);
+    glTexCoord2f(s0, t0);
+    glVertex2f(x0, y0);
+    glTexCoord2f(s0, t1);
+    glVertex2f(x0, y1);
+    glTexCoord2f(s1, t1);
+    glVertex2f(x1, y1);
+    glTexCoord2f(s1, t0);
+    glVertex2f(x1, y0);
+    glEnd();
+
+    pen_x += glyph->advance_x;
+  }
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glDisable(GL_BLEND);
+}
+
+void init_font_system() {
+  atlas = texture_atlas_new(512, 512, 1);
+
+  // Try to load a system font, fallback to basic if not available
+  const char *font_paths[] = {"C:\\Windows\\Fonts\\arial.ttf",
+                              "C:\\Windows\\Fonts\\calibri.ttf",
+                              "C:\\Windows\\Fonts\\verdana.ttf", NULL};
+
+  font = NULL;
+  for (int i = 0; font_paths[i] != NULL; i++) {
+    font = texture_font_new_from_file(atlas, 16, font_paths[i]);
+    if (font)
+      break;
+  }
+
+  if (!font) {
+    fprintf(stderr,
+            "Warning: Could not load any system fonts, text may not display\n");
+  }
+}
+
+void cleanup_font_system() {
+  if (font) {
+    texture_font_delete(font);
+    font = NULL;
+  }
+  if (atlas) {
+    texture_atlas_delete(atlas);
+    atlas = NULL;
   }
 }
 
@@ -158,6 +227,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     return -1;
   }
 
+  // Initialize font system after OpenGL is ready
+  init_font_system();
+
   Soundboard sb = {0};
   glfwSetWindowUserPointer(window, &sb);
   glfwSetScrollCallback(window, scroll_callback);
@@ -170,6 +242,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
   glOrtho(0, 800, 0, 600, -1, 1);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
+
+  // Enable textures for font rendering
+  glEnable(GL_TEXTURE_2D);
 
   while (!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT);
@@ -220,6 +295,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     glfwPollEvents();
   }
 
+  cleanup_font_system();
   glfwTerminate();
   return 0;
 }
