@@ -32,8 +32,9 @@ echo Integrating vcpkg...
 .\vcpkg integrate install
 
 REM Install GLFW3
-echo Installing GLFW3...
+echo Installing GLFW3 (both dynamic and static)...
 .\vcpkg install glfw3:x64-windows
+.\vcpkg install glfw3:x64-windows-static
 
 if %ERRORLEVEL% NEQ 0 (
     echo Failed to install GLFW3.
@@ -42,8 +43,9 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 REM Install GLEW
-echo Installing GLEW...
+echo Installing GLEW (both dynamic and static)...
 .\vcpkg install glew:x64-windows
+.\vcpkg install glew:x64-windows-static
 
 if %ERRORLEVEL% NEQ 0 (
     echo Failed to install GLEW.

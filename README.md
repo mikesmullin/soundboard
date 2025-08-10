@@ -17,16 +17,16 @@ A simple OpenGL-based soundboard application that plays .wav files from the curr
    ```
    This will:
    - Clone and bootstrap vcpkg package manager
-   - Install GLFW 3.x (window management) via vcpkg
-   - Install GLEW 2.x (OpenGL extensions) via vcpkg
+   - Install GLFW 3.x (window management) via vcpkg (both dynamic and static versions)
+   - Install GLEW 2.x (OpenGL extensions) via vcpkg (both dynamic and static versions)
    - Download dirent.h (directory operations for Windows)
 
 2. **Build the Project**
    ```cmd
    build.bat
    ```
-   This will compile the project using Clang and create `build/soundboard.exe`
-   Required DLLs are automatically copied to the build directory.
+   This will compile the project using Clang with static linking and create `build/soundboard.exe`
+   The executable is statically linked and doesn't require external DLL files.
 
 3. **Run the Application**
    ```cmd
@@ -53,9 +53,8 @@ Soundboard/
 ├── deps/                    # Local dependencies (created by install script)
 │   └── dirent/             # dirent.h for Windows
 └── build/                  # Build output (created by build script)
-    ├── soundboard.exe      # Compiled executable
-    ├── glfw3.dll           # GLFW runtime library
-    └── glew32.dll          # GLEW runtime library
+    ├── soundboard.exe      # Statically linked executable (no DLLs needed!)
+    └── *.wav               # Your sound files
 ```
 
 ## Dependencies
