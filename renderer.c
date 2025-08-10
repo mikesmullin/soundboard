@@ -1,9 +1,10 @@
 #include "renderer.h"
-#include "shaders.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "shaders.h"
 
 // FreeType-GL globals
 static texture_atlas_t* atlas = NULL;
