@@ -50,56 +50,241 @@ void draw_rect(float x, float y, float w, float h, float r, float g, float b) {
 
 void draw_text_simple(float x, float y, const char *text, float r, float g,
                       float b) {
-  if (!font || !atlas)
-    return;
-
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glEnable(GL_TEXTURE_2D);
-
-  // Bind the atlas texture
-  glBindTexture(GL_TEXTURE_2D, atlas->id);
-
-  float pen_x = x;
-  float pen_y = y;
-
-  for (int i = 0; text[i] != '\0'; i++) {
-    char character[2] = {text[i], '\0'};
-    texture_glyph_t *glyph = texture_font_get_glyph(font, character);
-    if (!glyph)
-      continue;
-
-    float x0 = pen_x + glyph->offset_x;
-    float y0 = pen_y + glyph->offset_y;
-    float x1 = x0 + glyph->width;
-    float y1 = y0 - glyph->height;
-
-    float s0 = glyph->s0;
-    float t0 = glyph->t0;
-    float s1 = glyph->s1;
-    float t1 = glyph->t1;
-
-    glBegin(GL_QUADS);
-    glColor4f(r, g, b, 1.0f);
-    glTexCoord2f(s0, t0);
-    glVertex2f(x0, y0);
-    glTexCoord2f(s0, t1);
-    glVertex2f(x0, y1);
-    glTexCoord2f(s1, t1);
-    glVertex2f(x1, y1);
-    glTexCoord2f(s1, t0);
-    glVertex2f(x1, y0);
+  // For now, let's use a simple bitmap-style text rendering
+  // This will at least show readable text while we debug freetype-gl
+  
+  float char_width = 8.0f;
+  float char_height = 12.0f;
+  
+  glDisable(GL_TEXTURE_2D);
+  
+  for (int i = 0; text[i] != '\0' && i < 20; i++) {
+    char c = text[i];
+    if (c == ' ') continue; // Skip spaces
+    
+    float char_x = x + i * char_width;
+    float char_y = y;
+    
+    glBegin(GL_LINES);
+    glColor3f(r, g, b);
+    
+    // Draw simple letter shapes using line segments
+    switch (c) {
+      case 'A': case 'a':
+        glVertex2f(char_x, char_y); glVertex2f(char_x + 3, char_y + 8);
+        glVertex2f(char_x + 3, char_y + 8); glVertex2f(char_x + 6, char_y);
+        glVertex2f(char_x + 1, char_y + 4); glVertex2f(char_x + 5, char_y + 4);
+        break;
+      case 'B': case 'b':
+        glVertex2f(char_x, char_y); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x + 4, char_y + 4);
+        glVertex2f(char_x, char_y + 4); glVertex2f(char_x + 4, char_y + 4);
+        glVertex2f(char_x + 4, char_y + 4); glVertex2f(char_x + 4, char_y);
+        glVertex2f(char_x + 4, char_y); glVertex2f(char_x, char_y);
+        break;
+      case 'C': case 'c':
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x, char_y);
+        glVertex2f(char_x, char_y); glVertex2f(char_x + 4, char_y);
+        break;
+      case 'D': case 'd':
+        glVertex2f(char_x, char_y); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 3, char_y + 8);
+        glVertex2f(char_x + 3, char_y + 8); glVertex2f(char_x + 4, char_y + 6);
+        glVertex2f(char_x + 4, char_y + 6); glVertex2f(char_x + 4, char_y + 2);
+        glVertex2f(char_x + 4, char_y + 2); glVertex2f(char_x + 3, char_y);
+        glVertex2f(char_x + 3, char_y); glVertex2f(char_x, char_y);
+        break;
+      case 'E': case 'e':
+        glVertex2f(char_x, char_y); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x, char_y + 4); glVertex2f(char_x + 3, char_y + 4);
+        glVertex2f(char_x, char_y); glVertex2f(char_x + 4, char_y);
+        break;
+      case 'F': case 'f':
+        glVertex2f(char_x, char_y); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x, char_y + 4); glVertex2f(char_x + 3, char_y + 4);
+        break;
+      case 'G': case 'g':
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x, char_y);
+        glVertex2f(char_x, char_y); glVertex2f(char_x + 4, char_y);
+        glVertex2f(char_x + 4, char_y); glVertex2f(char_x + 4, char_y + 3);
+        glVertex2f(char_x + 4, char_y + 3); glVertex2f(char_x + 2, char_y + 3);
+        break;
+      case 'H': case 'h':
+        glVertex2f(char_x, char_y); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x + 4, char_y); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x, char_y + 4); glVertex2f(char_x + 4, char_y + 4);
+        break;
+      case 'I': case 'i':
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x + 2, char_y + 8); glVertex2f(char_x + 2, char_y);
+        glVertex2f(char_x, char_y); glVertex2f(char_x + 4, char_y);
+        break;
+      case 'L': case 'l':
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x, char_y);
+        glVertex2f(char_x, char_y); glVertex2f(char_x + 4, char_y);
+        break;
+      case 'M': case 'm':
+        glVertex2f(char_x, char_y); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 2, char_y + 6);
+        glVertex2f(char_x + 2, char_y + 6); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x + 4, char_y);
+        break;
+      case 'N': case 'n':
+        glVertex2f(char_x, char_y); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 4, char_y);
+        glVertex2f(char_x + 4, char_y); glVertex2f(char_x + 4, char_y + 8);
+        break;
+      case 'O': case 'o':
+        glVertex2f(char_x, char_y); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x + 4, char_y);
+        glVertex2f(char_x + 4, char_y); glVertex2f(char_x, char_y);
+        break;
+      case 'P': case 'p':
+        glVertex2f(char_x, char_y); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x + 4, char_y + 4);
+        glVertex2f(char_x + 4, char_y + 4); glVertex2f(char_x, char_y + 4);
+        break;
+      case 'R': case 'r':
+        glVertex2f(char_x, char_y); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x + 4, char_y + 4);
+        glVertex2f(char_x + 4, char_y + 4); glVertex2f(char_x, char_y + 4);
+        glVertex2f(char_x + 2, char_y + 4); glVertex2f(char_x + 4, char_y);
+        break;
+      case 'S': case 's':
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x, char_y + 4);
+        glVertex2f(char_x, char_y + 4); glVertex2f(char_x + 4, char_y + 4);
+        glVertex2f(char_x + 4, char_y + 4); glVertex2f(char_x + 4, char_y);
+        glVertex2f(char_x + 4, char_y); glVertex2f(char_x, char_y);
+        break;
+      case 'T': case 't':
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x + 2, char_y + 8); glVertex2f(char_x + 2, char_y);
+        break;
+      case 'U': case 'u':
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x, char_y);
+        glVertex2f(char_x, char_y); glVertex2f(char_x + 4, char_y);
+        glVertex2f(char_x + 4, char_y); glVertex2f(char_x + 4, char_y + 8);
+        break;
+      case 'V': case 'v':
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 2, char_y);
+        glVertex2f(char_x + 2, char_y); glVertex2f(char_x + 4, char_y + 8);
+        break;
+      case 'W': case 'w':
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x, char_y);
+        glVertex2f(char_x, char_y); glVertex2f(char_x + 1, char_y + 2);
+        glVertex2f(char_x + 1, char_y + 2); glVertex2f(char_x + 2, char_y);
+        glVertex2f(char_x + 2, char_y); glVertex2f(char_x + 3, char_y + 2);
+        glVertex2f(char_x + 3, char_y + 2); glVertex2f(char_x + 4, char_y);
+        glVertex2f(char_x + 4, char_y); glVertex2f(char_x + 4, char_y + 8);
+        break;
+      case 'X': case 'x':
+        glVertex2f(char_x, char_y); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 4, char_y);
+        break;
+      case 'Y': case 'y':
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 2, char_y + 4);
+        glVertex2f(char_x + 2, char_y + 4); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x + 2, char_y + 4); glVertex2f(char_x + 2, char_y);
+        break;
+      case 'Z': case 'z':
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x, char_y);
+        glVertex2f(char_x, char_y); glVertex2f(char_x + 4, char_y);
+        break;
+      case '0':
+        glVertex2f(char_x, char_y); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x + 4, char_y);
+        glVertex2f(char_x + 4, char_y); glVertex2f(char_x, char_y);
+        glVertex2f(char_x, char_y); glVertex2f(char_x + 4, char_y + 8);
+        break;
+      case '1':
+        glVertex2f(char_x + 2, char_y); glVertex2f(char_x + 2, char_y + 8);
+        glVertex2f(char_x + 2, char_y + 8); glVertex2f(char_x + 1, char_y + 6);
+        break;
+      case '2':
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x + 4, char_y + 4);
+        glVertex2f(char_x + 4, char_y + 4); glVertex2f(char_x, char_y + 4);
+        glVertex2f(char_x, char_y + 4); glVertex2f(char_x, char_y);
+        glVertex2f(char_x, char_y); glVertex2f(char_x + 4, char_y);
+        break;
+      case '3':
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x + 4, char_y);
+        glVertex2f(char_x + 4, char_y); glVertex2f(char_x, char_y);
+        glVertex2f(char_x + 2, char_y + 4); glVertex2f(char_x + 4, char_y + 4);
+        break;
+      case '4':
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x, char_y + 4);
+        glVertex2f(char_x, char_y + 4); glVertex2f(char_x + 4, char_y + 4);
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x + 4, char_y);
+        break;
+      case '5':
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x, char_y + 4);
+        glVertex2f(char_x, char_y + 4); glVertex2f(char_x + 4, char_y + 4);
+        glVertex2f(char_x + 4, char_y + 4); glVertex2f(char_x + 4, char_y);
+        glVertex2f(char_x + 4, char_y); glVertex2f(char_x, char_y);
+        break;
+      case '6':
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x, char_y);
+        glVertex2f(char_x, char_y); glVertex2f(char_x + 4, char_y);
+        glVertex2f(char_x + 4, char_y); glVertex2f(char_x + 4, char_y + 4);
+        glVertex2f(char_x + 4, char_y + 4); glVertex2f(char_x, char_y + 4);
+        break;
+      case '7':
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x, char_y);
+        break;
+      case '8':
+        glVertex2f(char_x, char_y); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x + 4, char_y);
+        glVertex2f(char_x + 4, char_y); glVertex2f(char_x, char_y);
+        glVertex2f(char_x, char_y + 4); glVertex2f(char_x + 4, char_y + 4);
+        break;
+      case '9':
+        glVertex2f(char_x, char_y); glVertex2f(char_x + 4, char_y);
+        glVertex2f(char_x + 4, char_y); glVertex2f(char_x + 4, char_y + 8);
+        glVertex2f(char_x + 4, char_y + 8); glVertex2f(char_x, char_y + 8);
+        glVertex2f(char_x, char_y + 8); glVertex2f(char_x, char_y + 4);
+        glVertex2f(char_x, char_y + 4); glVertex2f(char_x + 4, char_y + 4);
+        break;
+      case '_':
+        glVertex2f(char_x, char_y); glVertex2f(char_x + 4, char_y);
+        break;
+      case '-':
+        glVertex2f(char_x, char_y + 4); glVertex2f(char_x + 4, char_y + 4);
+        break;
+      case '.':
+        glVertex2f(char_x + 2, char_y); glVertex2f(char_x + 2, char_y + 1);
+        break;
+      default:
+        // Unknown character - draw a small rectangle
+        glVertex2f(char_x + 1, char_y + 1); glVertex2f(char_x + 3, char_y + 1);
+        glVertex2f(char_x + 3, char_y + 1); glVertex2f(char_x + 3, char_y + 3);
+        glVertex2f(char_x + 3, char_y + 3); glVertex2f(char_x + 1, char_y + 3);
+        glVertex2f(char_x + 1, char_y + 3); glVertex2f(char_x + 1, char_y + 1);
+        break;
+    }
     glEnd();
-
-    pen_x += glyph->advance_x;
   }
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glDisable(GL_BLEND);
 }
 
 void init_font_system() {
   atlas = texture_atlas_new(512, 512, 1);
+  printf("Created atlas: %p, size: 512x512\n", (void*)atlas);
 
   // Try to load a system font, fallback to basic if not available
   const char *font_paths[] = {"C:\\Windows\\Fonts\\arial.ttf",
@@ -108,9 +293,12 @@ void init_font_system() {
 
   font = NULL;
   for (int i = 0; font_paths[i] != NULL; i++) {
+    printf("Trying to load font: %s\n", font_paths[i]);
     font = texture_font_new_from_file(atlas, 16, font_paths[i]);
-    if (font)
+    if (font) {
+      printf("Successfully loaded font: %s\n", font_paths[i]);
       break;
+    }
   }
 
   if (!font) {
@@ -124,9 +312,19 @@ void init_font_system() {
                            "0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`"
                            "abcdefghijklmnopqrstuvwxyz{|}~";
   texture_font_load_glyphs(font, cache_text);
-
-  printf("Font loaded successfully. Atlas size: %dx%d\n", atlas->width,
-         atlas->height);
+  
+  printf("Font loaded successfully. Atlas size: %zux%zu, ID: %u\n", 
+         atlas->width, atlas->height, atlas->id);
+  
+  // Test a simple character
+  texture_glyph_t *test_glyph = texture_font_get_glyph(font, "A");
+  if (test_glyph) {
+    printf("Test glyph 'A': size=%fx%f, tex_coords=(%f,%f)-(%f,%f)\n",
+           test_glyph->width, test_glyph->height,
+           test_glyph->s0, test_glyph->t0, test_glyph->s1, test_glyph->t1);
+  } else {
+    printf("ERROR: Could not get test glyph 'A'\n");
+  }
 }
 
 void cleanup_font_system() {
@@ -216,6 +414,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
   (void)hPrevInstance; // Suppress unused parameter warning
   (void)lpCmdLine;     // Suppress unused parameter warning
   (void)nCmdShow;      // Suppress unused parameter warning
+  
+  // Allocate console for debugging output
+  AllocConsole();
+  freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+  freopen_s((FILE**)stderr, "CONOUT$", "w", stderr);
+  printf("Soundboard Debug Console\n");
+  
   if (!glfwInit()) {
     fprintf(stderr, "Failed to initialize GLFW\n");
     return -1;
