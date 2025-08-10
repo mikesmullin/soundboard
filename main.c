@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,14 +12,29 @@
 #error "This program requires a C99-compliant compiler."
 #endif
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+  Soundboard* sb = (Soundboard*)glfwGetWindowUserPointer(window);
+  sb->window_width = (float)width;
+  sb->window_height = (float)height;
+
+  // Recalculate grid columns based on new window width
+  sb->grid_cols = floor((sb->window_width - 50.0f) / (TILE_WIDTH + TILE_SPACING));
+  if (sb->grid_cols < 1) {
+    sb->grid_cols = 1;
+  }
+
+  glViewport(0, 0, width, height);
+  set_projection((float)width, (float)height);
+}
+
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
   (void)xoffset;  // Suppress unused parameter warning
   Soundboard* sb = (Soundboard*)glfwGetWindowUserPointer(window);
   sb->scroll_offset += (float)yoffset * 20.0f;
 
   // Calculate total rows needed for grid layout
-  int total_rows = (sb->count + GRID_COLS - 1) / GRID_COLS;
-  float max_offset = (total_rows * (TILE_HEIGHT + TILE_SPACING)) - 600.0f + 50.0f;
+  int total_rows = (sb->count + sb->grid_cols - 1) / sb->grid_cols;
+  float max_offset = (total_rows * (TILE_HEIGHT + TILE_SPACING)) - sb->window_height + 50.0f;
 
   if (sb->scroll_offset < 0.0f)
     sb->scroll_offset = 0.0f;
@@ -28,17 +44,18 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
   Soundboard* sb = (Soundboard*)glfwGetWindowUserPointer(window);
-  ypos = 600.0 - ypos;  // Flip y-coordinate
+  ypos = sb->window_height - ypos;  // Flip y-coordinate
 
   int old_hovered = sb->hovered_tile;
   sb->hovered_tile = -1;
 
   for (int i = 0; i < sb->count; i++) {
-    int row = i / GRID_COLS;
-    int col = i % GRID_COLS;
+    int row = i / sb->grid_cols;
+    int col = i % sb->grid_cols;
 
     float tile_x = 50.0f + col * (TILE_WIDTH + TILE_SPACING);
-    float tile_y = 600.0f - (row * (TILE_HEIGHT + TILE_SPACING) + 50.0f) - sb->scroll_offset;
+    float tile_y =
+        sb->window_height - (row * (TILE_HEIGHT + TILE_SPACING) + 50.0f) - sb->scroll_offset;
 
     if (xpos >= tile_x && xpos <= tile_x + TILE_WIDTH && ypos >= tile_y &&
         ypos <= tile_y + TILE_HEIGHT) {
@@ -64,14 +81,15 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     Soundboard* sb = (Soundboard*)glfwGetWindowUserPointer(window);
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
-    ypos = 600.0 - ypos;  // Flip y-coordinate (OpenGL origin is bottom-left)
+    ypos = sb->window_height - ypos;  // Flip y-coordinate (OpenGL origin is bottom-left)
 
     for (int i = 0; i < sb->count; i++) {
-      int row = i / GRID_COLS;
-      int col = i % GRID_COLS;
+      int row = i / sb->grid_cols;
+      int col = i % sb->grid_cols;
 
       float tile_x = 50.0f + col * (TILE_WIDTH + TILE_SPACING);
-      float tile_y = 600.0f - (row * (TILE_HEIGHT + TILE_SPACING) + 50.0f) - sb->scroll_offset;
+      float tile_y =
+          sb->window_height - (row * (TILE_HEIGHT + TILE_SPACING) + 50.0f) - sb->scroll_offset;
 
       if (xpos >= tile_x && xpos <= tile_x + TILE_WIDTH && ypos >= tile_y &&
           ypos <= tile_y + TILE_HEIGHT) {
@@ -124,7 +142,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   set_projection(800.0f, 600.0f);
 
   Soundboard sb = {0};
+  sb.window_width = 800.0f;
+  sb.window_height = 600.0f;
+  sb.grid_cols = floor((sb.window_width - 50.0f) / (TILE_WIDTH + TILE_SPACING));
+  if (sb.grid_cols < 1) {
+    sb.grid_cols = 1;
+  }
+
   glfwSetWindowUserPointer(window, &sb);
+  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
   glfwSetScrollCallback(window, scroll_callback);
   glfwSetMouseButtonCallback(window, mouse_button_callback);
   glfwSetCursorPosCallback(window, cursor_position_callback);
@@ -145,13 +171,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     for (int i = 0; i < sb.count; i++) {
-      int row = i / GRID_COLS;
-      int col = i % GRID_COLS;
+      int row = i / sb.grid_cols;
+      int col = i % sb.grid_cols;
 
       float tile_x = 50.0f + col * (TILE_WIDTH + TILE_SPACING);
-      float tile_y = 600.0f - (row * (TILE_HEIGHT + TILE_SPACING) + 50.0f) - sb.scroll_offset;
+      float tile_y =
+          sb.window_height - (row * (TILE_HEIGHT + TILE_SPACING) + 50.0f) - sb.scroll_offset;
 
-      if (tile_y + TILE_HEIGHT < 0 || tile_y > 600.0f)
+      if (tile_y + TILE_HEIGHT < 0 || tile_y > sb.window_height)
         continue;
 
       // Draw tile background

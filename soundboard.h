@@ -7,7 +7,6 @@
 #define TILE_WIDTH 150.0f
 #define TILE_HEIGHT 60.0f
 #define TILE_SPACING 10.0f
-#define GRID_COLS 4
 #define MAX_PATH 260
 
 typedef struct {
@@ -19,6 +18,9 @@ typedef struct {
 typedef struct {
   Sound sounds[MAX_SOUNDS];
   int count;
+  int grid_cols;
+  float window_width;
+  float window_height;
   float scroll_offset;
   int hovered_tile;  // Index of currently hovered tile (-1 if none)
   int playing_tile;  // Index of currently playing tile (-1 if none)
