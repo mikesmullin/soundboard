@@ -20,4 +20,17 @@ void draw_rect(float x, float y, float w, float h, float r, float g, float b);
 // Draw text at the specified position
 void draw_text(float x, float y, const char* text, float r, float g, float b);
 
+// Draw text with clipping to a rectangular area
+void draw_text_clipped(
+    float x,
+    float y,
+    const char* text,
+    float r,
+    float g,
+    float b,
+    float clip_x,
+    float clip_y,
+    float clip_w,
+    float clip_h);
+
 #endif  // RENDERER_H

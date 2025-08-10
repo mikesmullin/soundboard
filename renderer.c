@@ -400,3 +400,30 @@ void draw_text(float x, float y, const char* text, float r, float g, float b) {
   glBindTexture(GL_TEXTURE_2D, 0);
   glDisable(GL_BLEND);
 }
+
+void draw_text_clipped(
+    float x,
+    float y,
+    const char* text,
+    float r,
+    float g,
+    float b,
+    float clip_x,
+    float clip_y,
+    float clip_w,
+    float clip_h) {
+  if (!font || !atlas || !text_program)
+    return;
+
+  // Enable scissor test for clipping
+  glEnable(GL_SCISSOR_TEST);
+  // Convert from OpenGL coordinates (bottom-left origin) to scissor coordinates
+  // Note: clip_y is the bottom of the clipping area in OpenGL coordinates
+  glScissor((GLint)clip_x, (GLint)clip_y, (GLsizei)clip_w, (GLsizei)clip_h);
+
+  // Draw the text normally
+  draw_text(x, y, text, r, g, b);
+
+  // Disable scissor test
+  glDisable(GL_SCISSOR_TEST);
+}

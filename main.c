@@ -7,7 +7,6 @@
 #include "renderer.h"
 #include "soundboard.h"
 
-
 #if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L
 #error "This program requires a C99-compliant compiler."
 #endif
@@ -27,6 +26,38 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
     sb->scroll_offset = max_offset;
 }
 
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+  Soundboard* sb = (Soundboard*)glfwGetWindowUserPointer(window);
+  ypos = 600.0 - ypos;  // Flip y-coordinate
+
+  int old_hovered = sb->hovered_tile;
+  sb->hovered_tile = -1;
+
+  for (int i = 0; i < sb->count; i++) {
+    int row = i / GRID_COLS;
+    int col = i % GRID_COLS;
+
+    float tile_x = 50.0f + col * (TILE_WIDTH + TILE_SPACING);
+    float tile_y = 600.0f - (row * (TILE_HEIGHT + TILE_SPACING) + 50.0f) - sb->scroll_offset;
+
+    if (xpos >= tile_x && xpos <= tile_x + TILE_WIDTH && ypos >= tile_y &&
+        ypos <= tile_y + TILE_HEIGHT) {
+      sb->hovered_tile = i;
+      break;
+    }
+  }
+
+  // Reset marquee offset when hovering changes
+  if (old_hovered != sb->hovered_tile) {
+    if (old_hovered >= 0 && old_hovered < sb->count) {
+      sb->sounds[old_hovered].marquee_offset = 0.0f;
+    }
+    if (sb->hovered_tile >= 0 && sb->hovered_tile < sb->count) {
+      sb->sounds[sb->hovered_tile].marquee_offset = 0.0f;
+    }
+  }
+}
+
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
   (void)mods;  // Suppress unused parameter warning
   if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
@@ -44,7 +75,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
       if (xpos >= tile_x && xpos <= tile_x + TILE_WIDTH && ypos >= tile_y &&
           ypos <= tile_y + TILE_HEIGHT) {
-        play_sound(sb->sounds[i].path);
+        play_sound(sb->sounds[i].path, sb, i);
         break;
       }
     }
@@ -96,12 +127,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   glfwSetWindowUserPointer(window, &sb);
   glfwSetScrollCallback(window, scroll_callback);
   glfwSetMouseButtonCallback(window, mouse_button_callback);
+  glfwSetCursorPosCallback(window, cursor_position_callback);
 
   load_sounds(&sb);
 
   while (!glfwWindowShouldClose(window)) {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    // Update playback status
+    if (sb.playing_tile >= 0) {
+      if (!is_sound_playing()) {
+        sb.playing_tile = -1;
+        sb.play_start_time = 0;
+        sb.sound_duration = 0;
+      }
+    }
 
     for (int i = 0; i < sb.count; i++) {
       int row = i / GRID_COLS;
@@ -116,22 +157,55 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
       // Draw tile background
       draw_rect(tile_x, tile_y, TILE_WIDTH, TILE_HEIGHT, 0.3f, 0.3f, 0.8f);
 
-      // Prepare filename
+      // Draw playback progress overlay if this tile is playing
+      if (sb.playing_tile == i && sb.sound_duration > 0) {
+        DWORD current_time = GetTickCount();
+        DWORD elapsed = current_time - sb.play_start_time;
+        float progress = (float)elapsed / (float)sb.sound_duration;
+        if (progress > 1.0f)
+          progress = 1.0f;
+
+        float progress_width = TILE_WIDTH * progress;
+        draw_rect(tile_x, tile_y, progress_width, TILE_HEIGHT, 0.2f, 0.2f, 0.6f);
+      }
+
+      // Prepare filename for display
       char display_name[32];
       strncpy_s(display_name, sizeof(display_name), sb.sounds[i].name, sizeof(display_name) - 1);
       display_name[sizeof(display_name) - 1] = '\0';
       char* ext = strrchr(display_name, '.');
       if (ext && _stricmp(ext, ".wav") == 0)
         *ext = '\0';
-      if (strlen(display_name) > 18) {
-        display_name[15] = '.';
-        display_name[16] = '.';
-        display_name[17] = '.';
-        display_name[18] = '\0';
+
+      // Handle marquee scrolling for hovered tile
+      float text_x = tile_x + 5.0f;
+
+      if (sb.hovered_tile == i && strlen(display_name) > 18) {
+        // Update marquee offset
+        sb.sounds[i].marquee_offset += 30.0f * (1.0f / 60.0f);  // Assume 60 FPS
+
+        // Calculate text width (approximate)
+        float text_width = strlen(display_name) * 8.0f;  // Approximate character width
+        float visible_width = TILE_WIDTH - 10.0f;  // Available width for text
+
+        // Reset offset when text has scrolled completely
+        if (sb.sounds[i].marquee_offset > text_width + visible_width) {
+          sb.sounds[i].marquee_offset = -visible_width;
+        }
+
+        text_x = tile_x + 5.0f - sb.sounds[i].marquee_offset;
+      } else {
+        // Truncate text if not hovered
+        if (strlen(display_name) > 18) {
+          display_name[15] = '.';
+          display_name[16] = '.';
+          display_name[17] = '.';
+          display_name[18] = '\0';
+        }
       }
 
       // Draw filename text
-      draw_text(tile_x + 5.0f, tile_y + TILE_HEIGHT - 15.0f, display_name, 1.0f, 1.0f, 1.0f);
+      draw_text(text_x, tile_y + TILE_HEIGHT - 15.0f, display_name, 1.0f, 1.0f, 1.0f);
     }
 
     glfwSwapBuffers(window);
