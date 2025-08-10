@@ -7,6 +7,8 @@
 #define TILE_WIDTH 150.0f
 #define TILE_HEIGHT 60.0f
 #define TILE_SPACING 10.0f
+#define REFRESH_BUTTON_WIDTH 80.0f
+#define REFRESH_BUTTON_HEIGHT 30.0f
 #define MAX_PATH 260
 
 typedef struct {
@@ -23,6 +25,7 @@ typedef struct {
   float window_height;
   float scroll_offset;
   int hovered_tile;  // Index of currently hovered tile (-1 if none)
+  int hovered_refresh_button;  // 1 if hovered, 0 otherwise
   int playing_tile;  // Index of currently playing tile (-1 if none)
   DWORD play_start_time;  // Time when playback started
   DWORD sound_duration;  // Duration of currently playing sound in ms

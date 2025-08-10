@@ -1,4 +1,7 @@
 @echo off
+echo Killing any existing soundboard process...
+taskkill /F /IM soundboard.exe 2>nul
+
 echo Building Soundboard project...
 
 REM Check if vcpkg dependencies exist

@@ -12,7 +12,7 @@ void load_sounds(Soundboard* sb) {
   DIR* dir;
   struct dirent* entry;
   sb->count = 0;
-  sb->scroll_offset = 0.0f;
+  // sb->scroll_offset = 0.0f; // Keep scroll position
   sb->hovered_tile = -1;
   sb->playing_tile = -1;
   sb->play_start_time = 0;
