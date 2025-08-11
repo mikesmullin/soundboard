@@ -9,7 +9,6 @@
 #include "renderer.h"
 #include "soundboard.h"
 
-
 #if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L
 #error "This program requires a C99-compliant compiler."
 #endif
@@ -94,6 +93,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     }
 
     // Draw refresh button
+    /*
     float refresh_button_x = sb.window_width - REFRESH_BUTTON_WIDTH - 10.0f;
     float refresh_button_y = sb.window_height - REFRESH_BUTTON_HEIGHT - 10.0f;
     float r = 0.5f, g = 0.5f, b = 0.5f;
@@ -111,6 +111,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         g,
         b);
     draw_text(refresh_button_x + 10.0f, refresh_button_y + 10.0f, "Refresh", 1.0f, 1.0f, 1.0f);
+    */
 
     for (int i = 0; i < sb.count; i++) {
       int row = i / sb.grid_cols;
