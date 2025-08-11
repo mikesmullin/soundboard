@@ -53,26 +53,14 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b 1
 )
 
-cd ..
+REM Install dirent
+echo Installing dirent...
+.\vcpkg install dirent:x64-windows-static
 
-REM Create directories for local dependencies
-if not exist "deps" mkdir deps
-cd deps
-
-REM Download dirent.h for Windows (vcpkg doesn't have this)
-echo Downloading dirent.h for Windows...
-if not exist "dirent" (
-    mkdir dirent
-    cd dirent
-    curl -L -o dirent.h "https://raw.githubusercontent.com/tronkko/dirent/master/include/dirent.h"
-    if exist dirent.h (
-        echo dirent.h downloaded successfully.
-    ) else (
-        echo Failed to download dirent.h. Please check your internet connection.
-    )
-    cd ..
-) else (
-    echo dirent.h already exists.
+if %ERRORLEVEL% NEQ 0 (
+    echo Failed to install dirent.
+    pause
+    exit /b 1
 )
 
 cd ..
@@ -83,11 +71,7 @@ echo.
 echo vcpkg has been installed and configured with:
 echo   - GLFW3 (x64-windows)
 echo   - GLEW (x64-windows)
-echo.
-echo Local dependencies:
-echo   deps/
-echo   └── dirent/
-echo       └── dirent.h
+echo   - dirent (x64-windows-static)
 echo.
 echo You can now run build.bat to compile your project.
 

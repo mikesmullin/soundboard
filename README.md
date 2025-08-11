@@ -65,11 +65,12 @@ soundboard.exe
 
 ```
 Soundboard/
-├── main.c             # 🚀 Main application entry point
-├── soundboard.c/.h    # 🔊 Core soundboard logic
-├── renderer.c/.h      # 🎨 OpenGL rendering functions
-├── callbacks.c/.h     # 🖱️ GLFW window event callbacks
-├── shaders.h          # ✨ GLSL shader source code
+├── src/
+│   ├── main.c             # 🚀 Main application entry point
+│   ├── soundboard.c/.h    # 🔊 Core soundboard logic
+│   ├── renderer.c/.h      # 🎨 OpenGL rendering functions
+│   ├── callbacks.c/.h     # 🖱️ GLFW window event callbacks
+│   └── shaders.h          # ✨ GLSL shader source code
 ├── install.bat        # 📥 Downloads and sets up dependencies
 ├── build.bat          # 🛠️ Builds the project with Clang
 ├── README.md          # 📄 This file
