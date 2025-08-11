@@ -119,10 +119,15 @@ DWORD WINAPI file_watcher_thread(LPVOID lpParam) {
 }
 
 void play_sound(const char* path, Soundboard* sb, int tile_index) {
+  // Stop any currently playing sound before starting a new one.
+  // PlaySoundA(NULL, NULL, 0);
+
+  // Get duration first to avoid file conflicts with PlaySound
+  sb->sound_duration = get_sound_duration(path);
+
   PlaySoundA(path, NULL, SND_FILENAME | SND_ASYNC);
   sb->playing_tile = tile_index;
   sb->play_start_time = GetTickCount();
-  sb->sound_duration = get_sound_duration(path);
 }
 
 DWORD get_sound_duration(const char* path) {
@@ -182,9 +187,4 @@ DWORD get_sound_duration(const char* path) {
   free(pwfxInfo);
   mmioClose(hmmio, 0);
   return duration;
-}
-
-int is_sound_playing(void) {
-  // Check if PlaySound is still playing
-  return !PlaySoundA(NULL, NULL, SND_NOSTOP);
 }

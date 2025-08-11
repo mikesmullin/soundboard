@@ -85,7 +85,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     // Update playback status
     if (sb.playing_tile >= 0) {
-      if (!is_sound_playing()) {
+      DWORD current_time = GetTickCount();
+      DWORD elapsed = current_time - sb.play_start_time;
+      if (elapsed >= sb.sound_duration) {
         sb.playing_tile = -1;
         sb.play_start_time = 0;
         sb.sound_duration = 0;

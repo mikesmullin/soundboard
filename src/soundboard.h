@@ -48,7 +48,4 @@ void play_sound(const char* path, Soundboard* sb, int tile_index);
 // Get the duration of a WAV file in milliseconds
 DWORD get_sound_duration(const char* path);
 
-// Check if a sound is currently playing
-int is_sound_playing(void);
-
 #endif  // SOUNDBOARD_H
