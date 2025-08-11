@@ -4,13 +4,43 @@
 #include <mmsystem.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <windows.h>
 
 #pragma comment(lib, "winmm.lib")
 
-void load_sounds(Soundboard* sb) {
+void find_sounds_recursive(const char* base_path, Soundboard* sb) {
   DIR* dir;
   struct dirent* entry;
+  char path[MAX_PATH];
+
+  if (!(dir = opendir(base_path)))
+    return;
+
+  while ((entry = readdir(dir)) != NULL && sb->count < MAX_SOUNDS) {
+    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+      continue;
+
+    snprintf(path, sizeof(path), "%s/%s", base_path, entry->d_name);
+    struct _stat s;
+    if (_stat(path, &s) == 0) {
+      if (s.st_mode & S_IFDIR) {
+        find_sounds_recursive(path, sb);
+      } else if (s.st_mode & S_IFREG) {
+        char* ext = strrchr(entry->d_name, '.');
+        if (ext && _stricmp(ext, ".wav") == 0) {
+          strncpy_s(sb->sounds[sb->count].name, MAX_PATH, path, _TRUNCATE);
+          strncpy_s(sb->sounds[sb->count].path, MAX_PATH, path, _TRUNCATE);
+          sb->sounds[sb->count].marquee_offset = 0.0f;
+          sb->count++;
+        }
+      }
+    }
+  }
+  closedir(dir);
+}
+
+void load_sounds(Soundboard* sb) {
   sb->count = 0;
   // sb->scroll_offset = 0.0f; // Keep scroll position
   sb->hovered_tile = -1;
@@ -18,22 +48,7 @@ void load_sounds(Soundboard* sb) {
   sb->play_start_time = 0;
   sb->sound_duration = 0;
 
-  dir = opendir(".");
-  if (!dir) {
-    fprintf(stderr, "Failed to open directory\n");
-    return;
-  }
-
-  while ((entry = readdir(dir)) && sb->count < MAX_SOUNDS) {
-    char* ext = strrchr(entry->d_name, '.');
-    if (ext && _stricmp(ext, ".wav") == 0) {
-      strncpy_s(sb->sounds[sb->count].name, MAX_PATH, entry->d_name, MAX_PATH - 1);
-      snprintf(sb->sounds[sb->count].path, MAX_PATH, ".\\%s", entry->d_name);
-      sb->sounds[sb->count].marquee_offset = 0.0f;
-      sb->count++;
-    }
-  }
-  closedir(dir);
+  find_sounds_recursive(".", sb);
 }
 
 DWORD WINAPI file_watcher_thread(LPVOID lpParam) {
@@ -71,7 +86,7 @@ DWORD WINAPI file_watcher_thread(LPVOID lpParam) {
             hDir,
             buffer,
             sizeof(buffer),
-            FALSE,  // Don't watch subdirectories
+            TRUE,  // Watch subdirectories
             FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME |
                 FILE_NOTIFY_CHANGE_LAST_WRITE,
             &bytes_returned,
