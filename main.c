@@ -177,7 +177,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
   load_sounds(&sb);
 
+  // Start filesystem watcher
+  sb.watcher_stop_event = CreateEvent(NULL, TRUE, FALSE, NULL);
+  sb.watcher_thread = CreateThread(NULL, 0, file_watcher_thread, &sb, 0, NULL);
+
   while (!glfwWindowShouldClose(window)) {
+    if (sb.needs_refresh) {
+      load_sounds(&sb);
+      sb.needs_refresh = 0;
+    }
+
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -291,6 +300,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
+
+  // Stop filesystem watcher
+  SetEvent(sb.watcher_stop_event);
+  WaitForSingleObject(sb.watcher_thread, INFINITE);
+  CloseHandle(sb.watcher_thread);
+  CloseHandle(sb.watcher_stop_event);
 
   cleanup_renderer();
   glfwTerminate();

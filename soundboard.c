@@ -36,6 +36,73 @@ void load_sounds(Soundboard* sb) {
   closedir(dir);
 }
 
+DWORD WINAPI file_watcher_thread(LPVOID lpParam) {
+  Soundboard* sb = (Soundboard*)lpParam;
+  char path[MAX_PATH];
+  GetCurrentDirectory(MAX_PATH, path);
+
+  HANDLE hDir = CreateFile(
+      path,
+      FILE_LIST_DIRECTORY,
+      FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+      NULL,
+      OPEN_EXISTING,
+      FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+      NULL);
+
+  if (hDir == INVALID_HANDLE_VALUE) {
+    fprintf(stderr, "Failed to create file handle for watcher\n");
+    return 1;
+  }
+
+  OVERLAPPED overlapped;
+  overlapped.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
+  if (!overlapped.hEvent) {
+    fprintf(stderr, "Failed to create event for watcher\n");
+    CloseHandle(hDir);
+    return 1;
+  }
+
+  BYTE buffer[4096];
+  DWORD bytes_returned;
+
+  while (1) {
+    if (!ReadDirectoryChangesW(
+            hDir,
+            buffer,
+            sizeof(buffer),
+            FALSE,  // Don't watch subdirectories
+            FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME |
+                FILE_NOTIFY_CHANGE_LAST_WRITE,
+            &bytes_returned,
+            &overlapped,
+            NULL)) {
+      fprintf(stderr, "ReadDirectoryChangesW failed\n");
+      break;
+    }
+
+    HANDLE handles[2] = {overlapped.hEvent, sb->watcher_stop_event};
+    DWORD wait_status = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
+
+    if (wait_status == WAIT_OBJECT_0) {
+      // File change detected
+      sb->needs_refresh = 1;
+      ResetEvent(overlapped.hEvent);
+    } else if (wait_status == WAIT_OBJECT_0 + 1) {
+      // Stop event signaled
+      break;
+    } else {
+      // Error
+      fprintf(stderr, "WaitForMultipleObjects failed\n");
+      break;
+    }
+  }
+
+  CloseHandle(hDir);
+  CloseHandle(overlapped.hEvent);
+  return 0;
+}
+
 void play_sound(const char* path, Soundboard* sb, int tile_index) {
   PlaySoundA(path, NULL, SND_FILENAME | SND_ASYNC);
   sb->playing_tile = tile_index;

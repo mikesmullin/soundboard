@@ -29,10 +29,18 @@ typedef struct {
   int playing_tile;  // Index of currently playing tile (-1 if none)
   DWORD play_start_time;  // Time when playback started
   DWORD sound_duration;  // Duration of currently playing sound in ms
+
+  // Filesystem watcher
+  volatile int needs_refresh;
+  HANDLE watcher_thread;
+  HANDLE watcher_stop_event;
 } Soundboard;
 
 // Load sound files from current directory
 void load_sounds(Soundboard* sb);
+
+// Filesystem watcher thread function
+DWORD WINAPI file_watcher_thread(LPVOID lpParam);
 
 // Play a sound file and track playback
 void play_sound(const char* path, Soundboard* sb, int tile_index);
