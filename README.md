@@ -1,73 +1,104 @@
-# Soundboard Project
+# Soundboard Project 🎵
 
-A simple OpenGL-based soundboard application that plays .wav files from the current directory.
+A simple, fun, and easy-to-use soundboard application built with OpenGL.  
+It plays `.wav` files from the same directory and displays them in a neat grid.
 
-## Prerequisites
+## ✨ Features
 
-- Clang compiler (install via LLVM or Visual Studio Build Tools)
-- Git (for downloading vcpkg)
-- Internet connection for downloading dependencies
-- Windows OS
+-   **Dynamic Grid Layout**: Sound tiles are arranged in a responsive grid.
+-   **Visual Feedback**: See playback progress and get hover effects on tiles.
+-   **Auto-Refresh**: Automatically detects new `.wav` files added to the directory.
+-   **Scrolling Text**: Long filenames scroll like a marquee when you hover over them.
+-   **Easy to Build**: Comes with simple scripts for installation and building.
 
-## Setup
+## 📋 Prerequisites
 
-1. **Install Dependencies**
-   ```cmd
-   install.bat
-   ```
-   This will:
-   - Clone and bootstrap vcpkg package manager
-   - Install GLFW 3.x (window management) via vcpkg (both dynamic and static versions)
-   - Install GLEW 2.x (OpenGL extensions) via vcpkg (both dynamic and static versions)
-   - Download dirent.h (directory operations for Windows)
+-   **Clang compiler**: Install via [LLVM](https://llvm.org/builds/) or Visual Studio Build Tools.
+-   **Git**: For cloning vcpkg.
+-   **Windows OS**: The project uses Windows-specific APIs.
+-   An **Internet connection** for downloading dependencies.
 
-2. **Build the Project**
-   ```cmd
-   build.bat
-   ```
-   This will compile the project using Clang with static linking and create `build/soundboard.exe`
-   The executable is statically linked and doesn't require external DLL files.
+## 🚀 Getting Started
 
-3. **Run the Application**
-   ```cmd
-   cd build
-   soundboard.exe
-   ```
+### 1. Install Dependencies
 
-## Usage
+First, run the installation script. This will download and set up all the necessary libraries.
 
-- Place .wav files in the same directory as the executable
-- The application will automatically scan for .wav files and create clickable tiles
-- Click on tiles to play sounds
-- Use mouse wheel to scroll through the list if you have many files
+```cmd
+install.bat
+```
 
-## Project Structure
+This script will:
+-   Clone and bootstrap the **vcpkg** package manager.
+-   Install **GLFW** (for window management) and **GLEW** (for OpenGL extensions).
+-   Download `dirent.h` for directory operations on Windows.
+
+### 2. Build the Project
+
+Next, compile the project using the build script.
+
+```cmd
+build.bat
+```
+
+This will compile the project using Clang with static linking and create `build/soundboard.exe`.  
+Because it's statically linked, you don't need to worry about any extra DLL files!
+
+### 3. Run the Application
+
+Finally, run the executable from the `build` directory.
+
+```cmd
+cd build
+soundboard.exe
+```
+
+## 🎧 Usage
+
+-   Place your `.wav` files in the `build` directory alongside the executable.
+-   The application will automatically find them and create clickable tiles.
+-   Click on a tile to play the sound.
+-   Use your mouse wheel to scroll if you have a lot of sounds.
+-   Click the "Refresh" button to manually rescan for new sounds.
+
+## 📂 Project Structure
 
 ```
 Soundboard/
-├── main.c                    # Main source code
-├── install.bat              # Downloads and sets up dependencies via vcpkg
-├── build.bat                # Builds the project with Clang
-├── README.md                # This file
-├── vcpkg/                   # vcpkg package manager (created by install script)
-├── deps/                    # Local dependencies (created by install script)
-│   └── dirent/             # dirent.h for Windows
-└── build/                  # Build output (created by build script)
-    ├── soundboard.exe      # Statically linked executable (no DLLs needed!)
-    └── *.wav               # Your sound files
+├── main.c             # 🚀 Main application entry point
+├── soundboard.c/.h    # 🔊 Core soundboard logic
+├── renderer.c/.h      # 🎨 OpenGL rendering functions
+├── callbacks.c/.h     # 🖱️ GLFW window event callbacks
+├── shaders.h          # ✨ GLSL shader source code
+├── install.bat        # 📥 Downloads and sets up dependencies
+├── build.bat          # 🛠️ Builds the project with Clang
+├── README.md          # 📄 This file
+├── vcpkg/             # vcpkg package manager (created by install script)
+├── deps/              # Local dependencies (created by install script)
+│   └── dirent/        # dirent.h for Windows
+└── build/             # 📦 Build output (created by build script)
+    ├── soundboard.exe # ✨ Statically linked executable
+    └── *.wav          # 🎵 Your sound files
 ```
 
-## Dependencies
+## 🔗 Dependencies
 
-- **GLFW**: Cross-platform library for creating windows with OpenGL contexts (installed via vcpkg)
-- **GLEW**: OpenGL Extension Wrangler Library for loading OpenGL extensions (installed via vcpkg)
-- **dirent.h**: POSIX directory operations for Windows compatibility (downloaded directly)
-- **Windows API**: For sound playback (PlaySound function)
-- **vcpkg**: Microsoft's C++ package manager for dependency management
+-   **GLFW**: A cross-platform library for creating windows with OpenGL contexts.
+-   **GLEW**: The OpenGL Extension Wrangler Library for managing OpenGL extensions.
+-   **dirent.h**: A header for POSIX directory operations on Windows.
+-   **Windows API**: Used for sound playback (`PlaySound`) and filesystem events.
+-   **vcpkg**: Microsoft's C++ package manager, used for easy dependency management.
 
-## Troubleshooting
+## 🤔 Troubleshooting
 
-- If the build fails, ensure Clang is installed and available in your PATH
-- If vcpkg installation fails, ensure Git is installed and accessible
-- If dependencies fail to download, check your internet connection
-- Make sure you have .wav files in the directory where you run the executable
+-   **Build fails?** Make sure Clang is installed and its `bin` directory is in your system's PATH.
+-   **vcpkg fails?** Ensure Git is installed and accessible from your terminal.
+-   **Dependencies fail to download?** Check your internet connection.
+-   **No sounds appear?** Make sure your `.wav` files are in the `build` directory where you run the executable.
+
+## 🤖 Credits
+
+This repo was created entirely using Github Copilot AI models:
+- Claude Sonnet 4
+- Gemini 2.5 Pro (Preview)
+- GPT-5 (Preview)
