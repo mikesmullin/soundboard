@@ -13,14 +13,48 @@ It plays `.wav` files from the same directory and displays them in a neat grid.
 
 ## 📋 Prerequisites
 
--   **Clang compiler**: Install via [LLVM](https://llvm.org/builds/) or Visual Studio Build Tools.
--   **Git**: For cloning vcpkg.
--   **Windows OS**: The project uses Windows-specific APIs.
--   An **Internet connection** for downloading dependencies.
+-   **C compiler** with C99 support (`clang` or `gcc`)
+-   **Git**
+-   **pkg-config** (`pkgconf` on Alpine)
+-   An **Internet connection** for downloading dependencies
+-   **Linux (Alpine)** or **Windows**
 
 ## 🚀 Getting Started
 
-### 1. Install Dependencies
+### 1. Install Dependencies (Alpine Linux)
+
+Install system tools:
+
+```sh
+apk add --no-cache build-base clang git pkgconf
+```
+
+Then install project dependencies with vcpkg:
+
+```sh
+./install.sh
+```
+
+### 2. Build the Project (Alpine Linux)
+
+```sh
+./build.sh
+```
+
+This creates `build/soundboard`.
+
+### 3. Run the Application (Alpine Linux)
+
+```sh
+cd build
+./soundboard
+```
+
+### Windows Quick Start
+
+If you are on Windows, use the original scripts:
+
+### 1. Install Dependencies (Windows)
 
 First, run the installation script. This will download and set up all the necessary libraries.
 
@@ -33,7 +67,7 @@ This script will:
 -   Install **GLFW** (for window management) and **GLEW** (for OpenGL extensions).
 -   Download `dirent.h` for directory operations on Windows.
 
-### 2. Build the Project
+### 2. Build the Project (Windows)
 
 Next, compile the project using the build script.
 
@@ -44,7 +78,7 @@ build.bat
 This will compile the project using Clang with static linking and create `build/soundboard.exe`.  
 Because it's statically linked, you don't need to worry about any extra DLL files!
 
-### 3. Run the Application
+### 3. Run the Application (Windows)
 
 Finally, run the executable from the `build` directory.
 
@@ -91,6 +125,9 @@ Soundboard/
 -   **vcpkg**: Microsoft's C++ package manager, used for easy dependency management.
 
 ## 🤔 Troubleshooting
+
+-   **Linux has no audio output?** Ensure `aplay` is installed (`apk add alsa-utils`).
+-   **Linux font text missing?** Ensure system fonts are installed (`apk add font-dejavu`).
 
 -   **Build fails?** Make sure Clang is installed and its `bin` directory is in your system's PATH.
 -   **vcpkg fails?** Ensure Git is installed and accessible from your terminal.

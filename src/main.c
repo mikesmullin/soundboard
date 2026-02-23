@@ -5,6 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+#define str_casecmp _stricmp
+#else
+#include <strings.h>
+#define str_casecmp strcasecmp
+#endif
+
 #include "callbacks.h"
 #include "renderer.h"
 #include "soundboard.h"
@@ -13,11 +20,15 @@
 #error "This program requires a C99-compliant compiler."
 #endif
 
+#ifdef _WIN32
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
   (void)hInstance;
   (void)hPrevInstance;
   (void)lpCmdLine;
   (void)nCmdShow;
+#else
+int main(void) {
+#endif
 
   if (!glfwInit()) {
     fprintf(stderr, "Failed to initialize GLFW\n");
@@ -71,8 +82,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   load_sounds(&sb);
 
   // Start filesystem watcher
+#ifdef _WIN32
   sb.watcher_stop_event = CreateEvent(NULL, TRUE, FALSE, NULL);
   sb.watcher_thread = CreateThread(NULL, 0, file_watcher_thread, &sb, 0, NULL);
+#else
+  sb.watcher_stop = 0;
+  sb.player_pid = 0;
+  if (pthread_create(&sb.watcher_thread, NULL, file_watcher_thread, &sb) != 0) {
+    fprintf(stderr, "Failed to create file watcher thread\n");
+  }
+#endif
 
   while (!glfwWindowShouldClose(window)) {
     if (sb.needs_refresh) {
@@ -85,12 +104,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
     // Update playback status
     if (sb.playing_tile >= 0) {
-      DWORD current_time = GetTickCount();
-      DWORD elapsed = current_time - sb.play_start_time;
-      if (elapsed >= sb.sound_duration) {
+      uint32_t current_time = get_time_ms();
+      uint32_t elapsed = current_time - sb.play_start_time_ms;
+      if (elapsed >= sb.sound_duration_ms) {
         sb.playing_tile = -1;
-        sb.play_start_time = 0;
-        sb.sound_duration = 0;
+        sb.play_start_time_ms = 0;
+        sb.sound_duration_ms = 0;
       }
     }
 
@@ -130,10 +149,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
       draw_rect(tile_x, tile_y, TILE_WIDTH, TILE_HEIGHT, 0.3f, 0.3f, 0.8f);
 
       // Draw playback progress overlay if this tile is playing
-      if (sb.playing_tile == i && sb.sound_duration > 0) {
-        DWORD current_time = GetTickCount();
-        DWORD elapsed = current_time - sb.play_start_time;
-        float progress = (float)elapsed / (float)sb.sound_duration;
+      if (sb.playing_tile == i && sb.sound_duration_ms > 0) {
+        uint32_t current_time = get_time_ms();
+        uint32_t elapsed = current_time - sb.play_start_time_ms;
+        float progress = (float)elapsed / (float)sb.sound_duration_ms;
         if (progress > 1.0f)
           progress = 1.0f;
 
@@ -143,10 +162,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
       // Prepare filename for display
       char display_name[32];
-      strncpy_s(display_name, sizeof(display_name), sb.sounds[i].name, sizeof(display_name) - 1);
+      snprintf(display_name, sizeof(display_name), "%s", sb.sounds[i].name);
       display_name[sizeof(display_name) - 1] = '\0';
       char* ext = strrchr(display_name, '.');
-      if (ext && _stricmp(ext, ".wav") == 0)
+      if (ext && str_casecmp(ext, ".wav") == 0)
         *ext = '\0';
 
       // Handle marquee scrolling for hovered tile
@@ -199,10 +218,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   }
 
   // Stop filesystem watcher
+#ifdef _WIN32
   SetEvent(sb.watcher_stop_event);
   WaitForSingleObject(sb.watcher_thread, INFINITE);
   CloseHandle(sb.watcher_thread);
   CloseHandle(sb.watcher_stop_event);
+#else
+  sb.watcher_stop = 1;
+  pthread_join(sb.watcher_thread, NULL);
+#endif
 
   cleanup_renderer();
   glfwTerminate();

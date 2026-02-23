@@ -4,6 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+#include <io.h>
+#define file_readable(path) (_access((path), 4) == 0)
+#else
+#include <unistd.h>
+#define file_readable(path) (access((path), R_OK) == 0)
+#endif
+
 #include "shaders.h"
 
 // FreeType-GL globals
@@ -183,14 +191,26 @@ static int init_font_system() {
   atlas = texture_atlas_new(512, 512, 1);
 
   // Try to load a system font, fallback to basic if not available
+#ifdef _WIN32
   const char* font_paths[] = {
       "C:\\Windows\\Fonts\\arial.ttf",
       "C:\\Windows\\Fonts\\calibri.ttf",
       "C:\\Windows\\Fonts\\verdana.ttf",
       NULL};
+#else
+  const char* font_paths[] = {
+      "/usr/share/fonts/TTF/DejaVuSans.ttf",
+      "/usr/share/fonts/dejavu/DejaVuSans.ttf",
+      "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+      NULL};
+#endif
 
   font = NULL;
   for (int i = 0; font_paths[i] != NULL; i++) {
+    if (!file_readable(font_paths[i])) {
+      continue;
+    }
+
     font = texture_font_new_from_file(atlas, 16, font_paths[i]);
     if (font)
       break;
@@ -198,7 +218,7 @@ static int init_font_system() {
 
   if (!font) {
     fprintf(stderr, "Warning: Could not load any system fonts, text may not display\n");
-    return 0;
+    return 1;
   }
 
   // Ensure pixel rows are tightly packed (important for 1-channel glyph uploads)
